@@ -1,0 +1,42 @@
+𝕏 イベント告知を見る
+— Past Events
+
+{PAST_EVENTS.map((ev,i)=>(
+{ev.emoji}
+{ev.name}
+{ev.venue}
+{ev.date} ))}
+); } function GuestPage() { return (
+Guest / Solo
+— X / Twitter
+
+Tweets by Nihey10
+X をフォローする
+— Upcoming / Past
+
+{GUEST_EVENTS.map((ev,i)=>( { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 8px 24px rgba(255,61,143,0.3)"; }} onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }} >
+{ev.emoji}
+{ev.name}
+{ev.venue}
+{ev.date} ))}
+); } function ContactPage() { const links = [ { name:"SoundCloud", icon:"🎵", color:"#ff5500", url:"https://soundcloud.com/seramu-otoha" }, { name:"X / Twitter", icon:"𝕏", color:"#1d9bf0", url:"https://x.com/Nihey10" }, { name:"VRChat", icon:"🥽", color:"#ff80b5", url:"https://vrchat.com/home/user/usr_9a972d8b-af68-4e7b-8050-22cf6fe9a773" }, { name:"VRCグループ", icon:"👥", color:"#b020ff", url:"https://vrc.group/SERA.0980" }, { name:"YouTube", icon:"▶", color:"#ff0000", url:"https://www.youtube.com/@ClubSera" }, ]; return (
+Contact
+{links.map(l=>( { e.currentTarget.style.transform="translateY(-4px)"; e.currentTarget.style.borderColor=`${l.color}80`; e.currentTarget.style.boxShadow=`0 8px 24px ${l.color}25`; }} onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=`${l.color}30`; e.currentTarget.style.boxShadow="none"; }} >
+{l.icon}
+{l.name}
+))}
+お気軽にご連絡ください
+お仕事のご依頼・コラボのご相談はいつでもどうぞ
+
+✉ MAIL TO US
+nihey.haisin@gmail.com
+
+); } function App() { const [current, setCurrent] = useState("Home"); const [animating, setAnimating] = useState(false); const navigate = (page) => { if (page===current||animating) return; setAnimating(true); setTimeout(()=>{ setCurrent(page); setAnimating(false); }, 240); }; const pageMap = { Home: , About: , Music: , Flyers: , ClubSera: , Guest: , Contact: , }; return (
+navigate("Home")} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}> 音葉せらむ{ e.target.style.display="none"; e.target.nextSibling.style.display="block"; }} /> 音葉せらむ
+{PAGES.filter(p=>p!=="Home").map(page=>( navigate(page)} style={{ background:"transparent", border:"none", color:current===page?"#ff3d8f":"#555", padding:"8px 14px", cursor:"pointer", fontSize:"0.8rem", fontWeight:700, letterSpacing:1, textTransform:"uppercase", borderBottom:current===page?"2px solid #ff3d8f":"2px solid transparent", transition:"all 0.2s" }} >{NAV_LABELS[page]} ))}
+{pageMap[current]}
+{current!=="Home" && (
+© 2026 音葉せらむ. All Rights Reserved.
+
+)}
+); } ReactDOM.createRoot(document.getElementById("root")).render();
