@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>音葉せらむ | VRChat DJ Portfolio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: rgba(255,61,143,0.3); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #080808; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,61,143,0.6); border-radius: 2px; }
+
+    /* BG */
+    #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    #bg .g1 { position: absolute; top: 0; right: 0; width: 600px; height: 600px; background: radial-gradient(circle at 80% 10%, rgba(255,61,143,0.12), transparent 60%); }
+    #bg .g2 { position: absolute; bottom: 0; left: 0; width: 500px; height: 500px; background: radial-gradient(circle at 20% 90%, rgba(176,32,255,0.08), transparent 60%); }
+    #bg svg { position: absolute; inset: 0; opacity: 0.025; width: 100%; height: 100%; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(8,8,8,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,61,143,0.12); }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .nav-logo { background: none; border: none; cursor: pointer; padding: 0; font-size: 1.1rem; font-weight: 900; background: linear-gradient(90deg,#ff3d8f,#ff80b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-btn { background: transparent; border: none; border-bottom: 2px solid transparent; color: #555; padding: 8px 14px; cursor: pointer; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; }
+    .nav-btn.active { color: #ff3d8f; border-bottom-color: #ff3d8f; }
+
+    /* PAGES */
+    #content { position: relative; z-index: 1; transition: opacity 0.24s, transform 0.24s; }
+    #content.fade { opacity: 0; transform: translateY(8px); }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* HOME */
+    #home { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24px; position: relative; }
+    .home-label { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .home-line { width: 32px; height: 1px; background: #ff3d8f; }
+    .home-label span { font-size: 0.72rem; color: #ff3d8f; letter-spacing: 6px; font-weight: 700; text-transform: uppercase; }
+    .avatar { width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 3px solid #ff3d8f; box-shadow: 0 0 40px rgba(255,61,143,0.6), 0 0 80px rgba(255,61,143,0.3); background: linear-gradient(135deg,rgba(255,61,143,0.3),rgba(176,32,255,0.2)); display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .avatar-fallback { font-size: 56px; }
+    .hero-title { font-size: clamp(2.8rem,8vw,5.5rem); font-weight: 900; background: linear-gradient(135deg,#fff 0%,#ff3d8f 50%,#b020ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
+    .home-btns { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .scroll-hint { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .scroll-hint span { font-size: 0.65rem; color: #444; letter-spacing: 4px; text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 40px; background: linear-gradient(#ff3d8f, transparent); }
+
+    /* INNER PAGES */
+    .inner { max-width: 860px; margin: 0 auto; padding: 80px 24px; }
+    .inner.wide { max-width: 880px; }
+    .inner.narrow { max-width: 760px; }
+    .page-title { margin-bottom: 48px; }
+    .page-title h2 { font-size: 2.6rem; font-weight: 900; background: linear-gradient(90deg,#ff3d8f,#ff80b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
+    .title-line { width: 40px; height: 3px; background: #ff3d8f; margin-top: 10px; border-radius: 2px; }
+
+    /* CARDS */
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 24px; backdrop-filter: blur(16px); }
+    .card.accent { border-color: rgba(255,61,143,0.3); box-shadow: 0 0 24px rgba(255,61,143,0.1); }
+
+    /* BUTTONS */
+    .btn { padding: 12px 28px; border: none; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.18s; display: inline-block; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg,#ff3d8f,#b020ff); color: #fff; box-shadow: 0 4px 20px rgba(255,61,143,0.44); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,61,143,0.55); }
+    .btn-outline { background: transparent; border: 1.5px solid rgba(255,61,143,0.6); color: #ff80b5; }
+    .btn-outline:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,61,143,0.3); }
+
+    /* TAGS */
+    .tag { padding: 4px 12px; border-radius: 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; display: inline-block; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .about-profile { grid-column: 1/-1; display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+    .profile-img { width: 130px; height: 160px; border-radius: 12px; background: linear-gradient(135deg,rgba(255,61,143,0.3),rgba(176,32,255,0.2)); border: 1px solid rgba(255,61,143,0.4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 40px rgba(255,61,143,0.4); overflow: hidden; }
+    .profile-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .profile-name { font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg,#ff3d8f,#ff80b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .profile-bio { margin-top: 14px; color: #888; line-height: 1.9; font-size: 0.92rem; }
+    .tag-list { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat-card { text-align: center; padding: 28px; }
+    .stat-num { font-size: 2.4rem; font-weight: 900; background: linear-gradient(90deg,#ff3d8f,#ff80b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { color: #555; font-size: 0.8rem; margin-top: 8px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* MUSIC */
+    .music-embed { background: rgba(255,61,143,0.04); border-radius: 12px; padding: 36px; text-align: center; border: 1px dashed rgba(255,61,143,0.3); margin-bottom: 16px; }
+    .track-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 14px; margin-top: 16px; }
+    .track-card { padding: 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+    .track-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(255,61,143,0.3); }
+    .track-icon { width: 50px; height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .track-title { font-weight: 800; font-size: 0.88rem; color: #ddd; }
+    .track-sub { color: #555; font-size: 0.76rem; margin-top: 2px; }
+
+    /* FLYERS */
+    .flyer-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 14px; }
+    .flyer-item { aspect-ratio: 3/4; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.22s, box-shadow 0.22s; position: relative; overflow: hidden; }
+    .flyer-item:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(255,61,143,0.5); }
+    .flyer-item img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .flyer-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.25); }
+    .flyer-label { font-size: 0.78rem; font-weight: 800; color: #fff; margin-top: 8px; position: relative; z-index: 1; letter-spacing: 2px; }
+    .flyer-emoji { font-size: 44px; position: relative; z-index: 1; }
+    .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; cursor: pointer; }
+    .lightbox.show { display: flex; }
+    .lightbox-img { width: 80%; max-width: 360px; aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; box-shadow: 0 0 60px rgba(255,61,143,0.6); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .lightbox-close { position: absolute; top: 20px; right: 28px; color: #888; font-size: 26px; }
+
+    /* EVENTS */
+    .section-label { color: #ff80b5; font-size: 0.72rem; letter-spacing: 5px; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; }
+    .event-card { padding: 14px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+    .event-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(255,61,143,0.3); }
+    .event-icon { width: 46px; height: 46px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .event-name { font-weight: 800; font-size: 0.88rem; color: #ddd; }
+    .event-venue { color: #555; font-size: 0.76rem; margin-top: 2px; }
+
+    /* CONTACT */
+    .social-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr)); gap: 12px; margin-bottom: 24px; }
+    .social-btn { padding: 20px 12px; text-align: center; background: rgba(255,255,255,0.04); border-radius: 12px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; display: block; }
+    .social-btn:hover { transform: translateY(-4px); }
+    .social-icon { font-size: 26px; margin-bottom: 8px; }
+    .social-name { font-size: 0.76rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* FOOTER */
+    footer { text-align: center; padding: 28px 24px; border-top: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 1; }
+    footer p { color: #333; font-size: 0.76rem; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 32px; }
+    .tab-btn { padding: 10px 24px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; color: #555; transition: all 0.2s; margin-bottom: -1px; }
+    .tab-btn.active { color: #ff3d8f; border-bottom-color: #ff3d8f; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    @media (max-width: 600px) {
+      .about-grid { grid-template-columns: 1fr; }
+      .about-profile { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="bg">
+  <div class="g1"></div>
+  <div class="g2"></div>
+  <svg><defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ff3d8f" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/></svg>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-logo" onclick="navigate('home')">音葉せらむ</button>
+    <div style="display:flex;gap:2px;flex-wrap:wrap;">
+      <button class="nav-btn" onclick="navigate('about')">About</button>
+      <button class="nav-btn" onclick="navigate('music')">Music</button>
+      <button class="nav-btn" onclick="navigate('flyers')">Flyers</button>
+      <button class="nav-btn" onclick="navigate('clubsera')">CLUB SERA</button>
+      <button class="nav-btn" onclick="navigate('guest')">Guest</button>
+      <button class="nav-btn" onclick="navigate('contact')">Contact</button>
+    </div>
+  </div>
+</nav>
+
+<div id="content">
+
+  <!-- HOME -->
+  <div id="home" class="page active">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;position:relative;">
+      <div class="home-label">
+        <div class="home-line"></div>
+        <span>VRChat DJ / Producer / Designer</span>
+        <div class="home-line"></div>
+      </div>
+      <div class="avatar">
+        <img src="./profile.jpg" alt="Artist Photo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div class="avatar-fallback" style="display:none;">🐰</div>
+      </div>
+      <h1 class="hero-title">音葉せらむ</h1>
+      <div class="home-btns">
+        <button class="btn btn-primary" onclick="navigate('music')">▶ LISTEN NOW</button>
+        <button class="btn btn-outline" onclick="navigate('contact')">CONTACT</button>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div id="about" class="page" style="padding-top:62px;">
+    <div class="inner">
+      <div class="page-title"><h2>About</h2><div class="title-line"></div></div>
+      <div class="about-grid">
+        <div class="card accent about-profile">
+          <div class="profile-img">
+            <img src="./profile.jpg" alt="Artist Photo" onerror="this.style.display='none'">
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <div class="profile-name">音葉せらむ</div>
+            <p class="profile-bio">リアルの現場で約4年間DJとして活動後、VRChatへ進出。自身が主催する大規模VRCDJイベントは参加者4000人を超える規模に成長。音楽制作・フライヤーデザインなど幅広く<br>クリエイティブ活動を展開中。</p>
+            <div class="tag-list">
+              <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);">VRC DJ</span>
+              <span class="tag" style="background:rgba(176,32,255,0.15);color:#b020ff;border:1px solid rgba(176,32,255,0.35);">DESIGN</span>
+              <span class="tag" style="background:rgba(61,90,255,0.15);color:#3d5aff;border:1px solid rgba(61,90,255,0.35);">PRODUCER</span>
+              <span class="tag" style="background:rgba(255,128,181,0.15);color:#ff80b5;border:1px solid rgba(255,128,181,0.35);">TRACKMAKER</span>
+            </div>
+          </div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-num">4,000+</div>
+          <div class="stat-label">VRC Group Members</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-num">17</div>
+          <div class="stat-label">Music Productions</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-num">2,437</div>
+          <div class="stat-label">X Followers</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-num">126</div>
+          <div class="stat-label">VRC DJ Sets (2025)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <div id="music" class="page" style="padding-top:62px;">
+    <div class="inner">
+      <div class="page-title"><h2>Music</h2><div class="title-line"></div></div>
+      <div class="card accent">
+        <div class="music-embed">
+          <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/seramu-otoha&color=%23ff3d8f&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
+          </iframe>
+          <div style="margin-top:16px;">
+            <a href="https://soundcloud.com/seramu-otoha" target="_blank" class="btn btn-primary">▶ SoundCloudで聴く</a>
+          </div>
+        </div>
+      </div>
+      <div class="track-grid">
+        <a href="https://soundcloud.com/seramu-otoha/otohaseramu-breaking-original" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#ff3d8f,#b020ff);">▶</div>
+          <div><div class="track-title">Breaking</div><div class="track-sub">Original</div></div>
+        </a>
+        <a href="https://soundcloud.com/seramu-otoha/diverotohaseramu-bootleg-remix" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#ff80b5,#ff3d8f);">▶</div>
+          <div><div class="track-title">Diver</div><div class="track-sub">Bootleg Remix</div></div>
+        </a>
+        <a href="https://soundcloud.com/seramu-otoha/otohaseramu-rumble-original" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#b020ff,#3d5aff);">▶</div>
+          <div><div class="track-title">Rumble</div><div class="track-sub">Original</div></div>
+        </a>
+        <a href="https://soundcloud.com/seramu-otoha/iris-out-otohaseramu-bootleg" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#ff3d8f,#ff6030);">▶</div>
+          <div><div class="track-title">Iris Out</div><div class="track-sub">Bootleg</div></div>
+        </a>
+        <a href="https://soundcloud.com/seramu-otoha/otohaseramu-welcome-original" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#3d5aff,#ff3d8f);">▶</div>
+          <div><div class="track-title">Welcome</div><div class="track-sub">Original</div></div>
+        </a>
+        <a href="https://soundcloud.com/seramu-otoha/aiso-otohaseramu-bootleg" target="_blank" class="card track-card">
+          <div class="track-icon" style="background:linear-gradient(135deg,#ff80b5,#b020ff);">▶</div>
+          <div><div class="track-title">Aiso</div><div class="track-sub">Bootleg</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLYERS -->
+  <div id="flyers" class="page" style="padding-top:62px;">
+    <div class="inner wide">
+      <div class="page-title"><h2>Flyers / Artwork</h2><div class="title-line"></div></div>
+      <div class="flyer-grid">
+        <div class="flyer-item" style="background:linear-gradient(135deg,#ff3d8f,#b020ff);" onclick="openLightbox(1)">
+          <img src="./flyer1.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">🌸</span>
+          <span class="flyer-label">FLYER 1</span>
+        </div>
+        <div class="flyer-item" style="background:linear-gradient(135deg,#ff80b5,#ff3d8f);" onclick="openLightbox(2)">
+          <img src="./flyer2.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">💗</span>
+          <span class="flyer-label">FLYER 2</span>
+        </div>
+        <div class="flyer-item" style="background:linear-gradient(135deg,#b020ff,#3d5aff);" onclick="openLightbox(3)">
+          <img src="./flyer3.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">🌙</span>
+          <span class="flyer-label">FLYER 3</span>
+        </div>
+        <div class="flyer-item" style="background:linear-gradient(135deg,#ff3d8f,#ff6030);" onclick="openLightbox(4)">
+          <img src="./flyer4.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">⭐</span>
+          <span class="flyer-label">FLYER 4</span>
+        </div>
+        <div class="flyer-item" style="background:linear-gradient(135deg,#3d5aff,#ff3d8f);" onclick="openLightbox(5)">
+          <img src="./flyer5.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">💕</span>
+          <span class="flyer-label">FLYER 5</span>
+        </div>
+        <div class="flyer-item" style="background:linear-gradient(135deg,#ff80b5,#b020ff);" onclick="openLightbox(6)">
+          <img src="./flyer6.jpg" onerror="this.style.display='none'">
+          <div class="flyer-overlay"></div>
+          <span class="flyer-emoji">🎨</span>
+          <span class="flyer-label">FLYER 6</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-img" id="lightbox-inner"></div>
+    <div class="lightbox-close">✕</div>
+  </div>
+
+  <!-- CLUB SERA -->
+  <div id="clubsera" class="page" style="padding-top:62px;">
+    <div class="inner">
+      <div class="page-title"><h2>CLUB SERA</h2><div class="title-line"></div></div>
+      <div class="card accent" style="padding:28px;margin-bottom:32px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,#ff3d8f,#b020ff);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;">
+            <img src="./clubsera-logo.png" alt="CLUB SERA" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <span style="display:none;">🎪</span>
+          </div>
+          <div>
+            <div style="font-size:1.4rem;font-weight:900;background:linear-gradient(90deg,#ff3d8f,#ff80b5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">CLUB SERA</div>
+            <span class="tag" style="margin-top:4px;background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);">vrc.group/SERA.0980</span>
+          </div>
+        </div>
+        <p style="color:#888;font-size:0.88rem;line-height:1.85;border-left:2px solid rgba(255,61,143,0.5);padding-left:14px;">音・映像・ダンスが融合するオールジャンルDJイベント。DJ・VJ・DANCERが一体となり、バーチャル空間で最高のパーティーをお届けします。</p>
+        <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="color:#555;font-size:0.72rem;letter-spacing:4px;text-transform:uppercase;font-weight:700;">主催イベント</span>
+          <span class="tag" style="background:rgba(176,32,255,0.15);color:#b020ff;border:1px solid rgba(176,32,255,0.35);">ARCANE</span>
+        </div>
+        <div style="margin-top:18px;">
+          <a href="https://vrc.group/SERA.0980" target="_blank" class="btn btn-outline">🥽 グループに参加</a>
+        </div>
+      </div>
+
+      <p class="section-label">— Upcoming</p>
+      <div class="card accent" style="padding:24px;margin-bottom:32px;">
+        <blockquote class="twitter-tweet"><a href="https://x.com/Nihey10/status/2044369990623854971"></a></blockquote>
+        <script async src="https://platform.twitter.com/widgets.js"></script>
+        <div style="text-align:center;padding:16px 0;">
+          <a href="https://x.com/Nihey10/status/2044369990623854971" target="_blank" class="btn btn-primary">𝕏 イベント告知を見る</a>
+        </div>
+      </div>
+
+      <p class="section-label">— Past Events</p>
+      <a class="card event-card" style="display:flex;">
+        <div class="event-icon" style="background:linear-gradient(135deg,#ff3d8f,#b020ff);">🌸</div>
+        <div style="flex:1;">
+          <div class="event-name">第74回「ARCANE」~R3cky回~</div>
+          <div class="event-venue">VRChat - CLUB SERA</div>
+        </div>
+        <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);align-self:center;">2026.04.21</span>
+      </a>
+      <a class="card event-card" style="display:flex;margin-top:10px;">
+        <div class="event-icon" style="background:linear-gradient(135deg,#ff80b5,#ff3d8f);">💗</div>
+        <div style="flex:1;">
+          <div class="event-name">第73回「ARCANE」~Guest:zensen~</div>
+          <div class="event-venue">VRChat - CLUB SERA</div>
+        </div>
+        <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);align-self:center;">2026.04.14</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- GUEST -->
+  <div id="guest" class="page" style="padding-top:62px;">
+    <div class="inner">
+      <div class="page-title"><h2>Guest / Solo</h2><div class="title-line"></div></div>
+      <p class="section-label">— X / Twitter</p>
+      <div class="card accent" style="padding:24px;margin-bottom:32px;text-align:center;">
+        <a class="twitter-timeline" href="https://x.com/Nihey10" data-tweet-limit="3" data-theme="dark">Tweets by Nihey10</a>
+        <script async src="https://platform.twitter.com/widgets.js"></script>
+        <div style="margin-top:16px;">
+          <a href="https://x.com/Nihey10" target="_blank" class="btn btn-outline">X をフォローする</a>
+        </div>
+      </div>
+      <p class="section-label">— Upcoming / Past</p>
+      <a href="http://vrc.group/BANGER.3472" target="_blank" class="card event-card" style="display:flex;">
+        <div class="event-icon" style="background:linear-gradient(135deg,#ff3d8f,#b020ff);">🎤</div>
+        <div style="flex:1;">
+          <div class="event-name">BANGER ROOM Vol.4</div>
+          <div class="event-venue">VRChat - BANGER ROOM</div>
+        </div>
+        <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);align-self:center;">2026.04.25</span>
+      </a>
+      <a href="https://vrc.group/RAVECH.9520" target="_blank" class="card event-card" style="display:flex;margin-top:10px;">
+        <div class="event-icon" style="background:linear-gradient(135deg,#ff80b5,#ff3d8f);">🎧</div>
+        <div style="flex:1;">
+          <div class="event-name">RAVE ECHO</div>
+          <div class="event-venue">VRChat - RAVE ECHO</div>
+        </div>
+        <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);align-self:center;">2026.04.28</span>
+      </a>
+      <a href="https://vrc.group/KYOKKA.4025" target="_blank" class="card event-card" style="display:flex;margin-top:10px;">
+        <div class="event-icon" style="background:linear-gradient(135deg,#b020ff,#3d5aff);">🌸</div>
+        <div style="flex:1;">
+          <div class="event-name">CAFE＆BAR極華</div>
+          <div class="event-venue">VRChat - 極華</div>
+        </div>
+        <span class="tag" style="background:rgba(255,61,143,0.15);color:#ff3d8f;border:1px solid rgba(255,61,143,0.35);align-self:center;">2026.05.06</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div id="contact" class="page" style="padding-top:62px;">
+    <div class="inner narrow">
+      <div class="page-title"><h2>Contact</h2><div class="title-line"></div></div>
+      <div class="social-grid">
+        <a href="https://soundcloud.com/seramu-otoha" target="_blank" class="social-btn" style="border:1px solid rgba(255,85,0,0.3);">
+          <div class="social-icon">🎵</div>
+          <div class="social-name" style="color:#ff5500;">SoundCloud</div>
+        </a>
+        <a href="https://x.com/Nihey10" target="_blank" class="social-btn" style="border:1px solid rgba(29,155,240,0.3);">
+          <div class="social-icon">𝕏</div>
+          <div class="social-name" style="color:#1d9bf0;">X / Twitter</div>
+        </a>
+        <a href="https://vrchat.com/home/user/usr_9a972d8b-af68-4e7b-8050-22cf6fe9a773" target="_blank" class="social-btn" style="border:1px solid rgba(255,128,181,0.3);">
+          <div class="social-icon">🥽</div>
+          <div class="social-name" style="color:#ff80b5;">VRChat</div>
+        </a>
+        <a href="https://vrc.group/SERA.0980" target="_blank" class="social-btn" style="border:1px solid rgba(176,32,255,0.3);">
+          <div class="social-icon">👥</div>
+          <div class="social-name" style="color:#b020ff;">VRCグループ</div>
+        </a>
+        <a href="https://www.youtube.com/@ClubSera" target="_blank" class="social-btn" style="border:1px solid rgba(255,0,0,0.3);">
+          <div class="social-icon">▶</div>
+          <div class="social-name" style="color:#ff0000;">YouTube</div>
+        </a>
+      </div>
+      <div class="card accent" style="padding:36px;text-align:center;">
+        <div style="font-size:1.1rem;font-weight:900;background:linear-gradient(90deg,#ff3d8f,#ff80b5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">お気軽にご連絡ください</div>
+        <p style="color:#666;font-size:0.88rem;margin-top:10px;">お仕事のご依頼・コラボのご相談はいつでもどうぞ</p>
+        <div style="margin-top:22px;">
+          <a href="mailto:nihey.haisin@gmail.com" class="btn btn-primary">✉ MAIL TO US</a>
+        </div>
+        <p style="color:#444;margin-top:12px;font-size:0.78rem;">nihey.haisin@gmail.com</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer id="footer" style="display:none;">
+  <p>© 2026 音葉せらむ. All Rights Reserved.</p>
+</footer>
+
+<script>
+  const flyerGrads = [
+    "linear-gradient(135deg,#ff3d8f,#b020ff)",
+    "linear-gradient(135deg,#ff80b5,#ff3d8f)",
+    "linear-gradient(135deg,#b020ff,#3d5aff)",
+    "linear-gradient(135deg,#ff3d8f,#ff6030)",
+    "linear-gradient(135deg,#3d5aff,#ff3d8f)",
+    "linear-gradient(135deg,#ff80b5,#b020ff)",
+  ];
+  const flyerEmojis = ["🌸","💗","🌙","⭐","💕","🎨"];
+
+  let current = "home";
+
+  function navigate(page) {
+    if (page === current) return;
+    const content = document.getElementById("content");
+    content.classList.add("fade");
+    setTimeout(() => {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(page).classList.add("active");
+      const btns = document.querySelectorAll(".nav-btn");
+      btns.forEach(b => { if (b.textContent.toLowerCase().replace(" ","") === page.toLowerCase().replace(" ","") || b.getAttribute("onclick").includes(page)) b.classList.add("active"); });
+      document.getElementById("footer").style.display = page === "home" ? "none" : "block";
+      current = page;
+      window.scrollTo(0, 0);
+      content.classList.remove("fade");
+    }, 240);
+  }
+
+  function openLightbox(n) {
+    const lb = document.getElementById("lightbox");
+    const inner = document.getElementById("lightbox-inner");
+    inner.style.background = flyerGrads[n-1];
+    inner.innerHTML = `
+      <img src="./flyer${n}.jpg" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <span style="font-size:80px;">${flyerEmojis[n-1]}</span>
+        <span style="color:#fff;margin-top:16px;font-weight:900;font-size:1rem;letter-spacing:3px;">FLYER ${n}</span>
+      </div>`;
+    lb.classList.add("show");
+  }
+
+  function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("show");
+  }
+</script>
+</body>
+</html>
